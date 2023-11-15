@@ -1,14 +1,16 @@
 <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <About>
-         <Summary>Kill a chicken</Summary>
+         <Summary>Kill a chicken!</Summary>
       </About>
+
       <ModSettings>
-         <MsPerTick>5</MsPerTick>
+         <MsPerTick>50</MsPerTick>
       </ModSettings>
+
       <ServerSection>
          <ServerInitialConditions>
             <Time>
-               <StartTime>0</StartTime>
+               <StartTime>5000</StartTime>
                <AllowPassageOfTime>false</AllowPassageOfTime>
             </Time>
             <Weather>clear</Weather>
@@ -156,42 +158,48 @@
                <!-- Chicken -->
                <DrawEntity type="Chicken" x="3.5" y="4" z="5.5" />
             </DrawingDecorator>
-            <ServerQuitFromTimeUp description="out_of_time" timeLimitMs="1000000" />
+            <ServerQuitFromTimeUp description="out_of_time" timeLimitMs="6000" />
             <ServerQuitWhenAnyAgentFinishes />
          </ServerHandlers>
       </ServerSection>
+
       <AgentSection mode="Survival">
-         <Name>Agent0</Name>
+         <Name>Chicken Deleter</Name>
          <AgentStart>
             <Placement pitch="30" x="0.5" y="4" yaw="270" z="0.5" />
             <Inventory>
                <InventoryBlock quantity="1" slot="39" type="diamond_helmet" />
+               <InventoryItem slot="0" type="diamond_sword" />
             </Inventory>
          </AgentStart>
          <AgentHandlers>
-            <DiscreteMovementCommands>
-               <ModifierList type="deny-list">
-                  <command>attack</command>
-               </ModifierList>
-            </DiscreteMovementCommands>
+<!--            <DiscreteMovementCommands>-->
+<!--               <ModifierList type="deny-list">-->
+<!--                  <command>attack</command>-->
+<!--               </ModifierList>-->
+<!--            </DiscreteMovementCommands>-->
+            <ContinuousMovementCommands turnSpeedDegs="180"/>
+            <ChatCommands/>
+            <MissionQuitCommands/>
             <ObservationFromNearbyEntities>
-               <Range name="entities" xrange="8" yrange="2" zrange="6" />
+               <Range name="entities" xrange="16" yrange="16" zrange="16" />
             </ObservationFromNearbyEntities>
-            <ObservationFromGrid>
-               <Grid absoluteCoords="true" name="board">
-                  <min x="0" y="3" z="0" />
-                  <max x="10" y="3" z="10" />
-               </Grid>
-            </ObservationFromGrid>
-            <ObservationFromFullStats />
+            <ObservationFromRay/>
+<!--            <ObservationFromGrid>-->
+<!--               <Grid absoluteCoords="true" name="board">-->
+<!--                  <min x="0" y="3" z="0" />-->
+<!--                  <max x="10" y="3" z="10" />-->
+<!--               </Grid>-->
+<!--            </ObservationFromGrid>-->
+            <ObservationFromFullStats/>
             <RewardForSendingCommand reward="-1" />
-            <RewardForTouchingBlockType>
-               <Block behaviour="onceOnly" reward="5" type="brick_block" />
-            </RewardForTouchingBlockType>
-            <AgentQuitFromReachingCommandQuota description="command_quota_reached" total="100" />
-            <AgentQuitFromTouchingBlockType>
-               <Block description="Agent0_defaulted" type="brick_block" />
-            </AgentQuitFromTouchingBlockType>
+<!--            <RewardForTouchingBlockType>-->
+<!--               <Block behaviour="onceOnly" reward="5" type="brick_block" />-->
+<!--            </RewardForTouchingBlockType>-->
+<!--            <AgentQuitFromReachingCommandQuota description="command_quota_reached" total="100" />-->
+<!--            <AgentQuitFromTouchingBlockType>-->
+<!--               <Block description="Agent0_defaulted" type="brick_block" />-->
+<!--            </AgentQuitFromTouchingBlockType>-->
             <VideoProducer want_depth="false">
                <Width>800</Width>
                <Height>600</Height>

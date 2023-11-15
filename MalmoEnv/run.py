@@ -52,7 +52,8 @@ if __name__ == '__main__':
              server2=args.server2, port2=args.port2,
              role=args.role,
              exp_uid=args.experimentUniqueId,
-             episode=args.episode, resync=args.resync)
+             episode=args.episode, resync=args.resync,
+             action_filter={"move", "turn", "use", "attack", "pitch", "jump"})
 
     for i in range(args.episodes):
         print("reset " + str(i))
@@ -62,13 +63,16 @@ if __name__ == '__main__':
         done = False
         while not done and (args.episodemaxsteps <= 0 or steps < args.episodemaxsteps):
             action = env.action_space.sample()
+            print(env.action_space)
 
             obs, reward, done, info = env.step(action)
             steps += 1
             print("reward: " + str(reward))
             # print("done: " + str(done))
-            print("obs: " + str(obs))
-            # print("info" + info)
+            print(type(obs))
+            print(obs)
+            print(type(info))
+            print(info)
             if args.saveimagesteps > 0 and steps % args.saveimagesteps == 0:
                 h, w, d = env.observation_space.shape
                 img = Image.fromarray(obs.reshape(h, w, d))
