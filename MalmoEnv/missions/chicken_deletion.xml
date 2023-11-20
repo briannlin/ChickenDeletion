@@ -4,7 +4,7 @@
       </About>
 
       <ModSettings>
-         <MsPerTick>50</MsPerTick>
+         <MsPerTick>50</MsPerTick> <!--was 50-->
       </ModSettings>
 
       <ServerSection>
@@ -158,7 +158,7 @@
                <!-- Chicken -->
                <DrawEntity type="Chicken" x="3.5" y="4" z="5.5" />
             </DrawingDecorator>
-            <ServerQuitFromTimeUp description="out_of_time" timeLimitMs="6000" />
+            <ServerQuitFromTimeUp description="out_of_time" timeLimitMs="60000" />
             <ServerQuitWhenAnyAgentFinishes />
          </ServerHandlers>
       </ServerSection>
@@ -169,6 +169,7 @@
             <Placement pitch="30" x="0.5" y="4" yaw="270" z="0.5" />
             <Inventory>
                <InventoryBlock quantity="1" slot="39" type="diamond_helmet" />
+               <InventoryItem slot="0" type="diamond_sword" />
                <InventoryItem slot="0" type="diamond_sword" />
             </Inventory>
          </AgentStart>

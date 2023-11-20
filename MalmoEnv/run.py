@@ -22,6 +22,10 @@ import argparse
 from pathlib import Path
 import time
 from PIL import Image
+import random
+from helper_functions import Reward, Agent
+import numpy as np
+import json
 
 
 if __name__ == '__main__':
@@ -53,7 +57,11 @@ if __name__ == '__main__':
              role=args.role,
              exp_uid=args.experimentUniqueId,
              episode=args.episode, resync=args.resync,
-             action_filter={"move", "turn", "use", "attack", "pitch", "jump"})
+             action_filter={"move", "turn", "attack", "pitch", "jump"})
+
+    agent = Agent()
+    agent.initialize_value_table()
+    column_index = {"move ": 0, "turn ": 1, "attack ": 2, "pitch ": 3, "jump ": 4}
 
     for i in range(args.episodes):
         print("reset " + str(i))
@@ -61,23 +69,65 @@ if __name__ == '__main__':
 
         steps = 0
         done = False
+        rewards = Reward()
+        state_space = [0, 6, 7, 0, 1]
+        previous_info = 0
         while not done and (args.episodemaxsteps <= 0 or steps < args.episodemaxsteps):
-            action = env.action_space.sample()
-            print(env.action_space)
 
+            try:
+                previous_info_loaded = json.loads(previous_info)
+                if previous_info_loaded.get("LineOfSight").get("hitType") == "entity" and previous_info_loaded.get("LineOfSight").get("inRange") == True:
+                    action_type = "attack "
+                else: 
+                    action_type = agent.action_selection_nn(state_space)
+            except:
+                action_type = agent.action_selection_nn(state_space)
+            magnitude = agent.magnitude_selection_nn(state_space, action_type)
+
+            action = action_type + str(magnitude)
+
+            print(f"action that is taken: {action}")
             obs, reward, done, info = env.step(action)
             steps += 1
-            print("reward: " + str(reward))
-            # print("done: " + str(done))
-            print(type(obs))
-            print(obs)
+            custom_reward = rewards.calculate_reward(info)
+            previous_info = info
+        
+            try:
+                loaded_info = json.loads(info)
+                if loaded_info.get("MobsKilled") == 1:
+                    done = True
+            except:
+                pass
+            
+            print("reward: " + str(custom_reward))
+            print("done: " + str(done))
             print(type(info))
             print(info)
+            state_space = agent.state_space_function(info)
+            print(f"current state space: {state_space}")
+            state_space_index = agent.state_space_index(state_space)
+            print(f"current state space index: {state_space_index}")
+            print(f"current value function for state space: {agent.value_table[state_space_index]}")
+            if action_type in ["move ", "turn ", "attack "]:
+                env.step(action_type + "0")
+            
+
+            if custom_reward > agent.value_table[state_space_index][column_index.get(action_type)]:
+                agent.value_table[state_space_index][column_index.get(action_type)] = custom_reward
+                if custom_reward >= max(agent.value_table[state_space_index]):
+                    agent.train_action_nn()
+                try:
+                    agent.magnitude_table[state_space_index][column_index.get(action_type)] = int(magnitude)
+                except:
+                    agent.magnitude_table[state_space_index][column_index.get(action_type)] = float(magnitude)
+                # retrain magitude_selection_nn
+
             if args.saveimagesteps > 0 and steps % args.saveimagesteps == 0:
                 h, w, d = env.observation_space.shape
                 img = Image.fromarray(obs.reshape(h, w, d))
                 img.save('image' + str(args.role) + '_' + str(steps) + '.png')
 
-            time.sleep(.05)
+            time.sleep(0.05)
+
 
     env.close()
