@@ -60,74 +60,114 @@ if __name__ == '__main__':
              action_filter={"move", "turn", "attack", "pitch", "jump"})
 
     agent = Agent()
-    agent.initialize_value_table()
     column_index = {"move ": 0, "turn ": 1, "attack ": 2, "pitch ": 3, "jump ": 4}
+    action_list = ["move ", "turn ", "attack "]
+    epsilon = 0
+    time_track_list = []
+
+    with open('magnitude_trained.npy', 'rb') as f:
+        agent.magnitude_table = np.load(f)
+    with open('value_trained.npy', 'rb') as f:
+        agent.value_table = np.load(f)
+    
+    
 
     for i in range(args.episodes):
+        episode_time = 0
+        
         print("reset " + str(i))
         obs = env.reset()
 
         steps = 0
         done = False
         rewards = Reward()
-        state_space = [0, 6, 7, 0, 1]
-        previous_info = 0
+        state_space = [2, 9, 0, 0]
+        previous_info = {"entities":[{"yaw":270.0,"x":0.5,"y":4.0,"z":0.5,"pitch":30.0,"id":"3637d6bc-9d46-3e7a-8326-bc957d353e98","motionX":0.0,"motionY":-0.0784000015258789,"motionZ":0.0,"life":20.0,"name":"Chicken Deleter"},{"yaw":0.0,"x":3.5,"y":4.0,"z":5.5,"pitch":0.0,"id":"3670ddce-9e97-4542-9278-e7020baaf2b3","motionX":0.0,"motionY":-0.027635999999999997,"motionZ":0.0,"life":4.0,"name":"Chicken"}],"LineOfSight":{"hitType":"block","x":3.30597412875441,"y":4.0,"z":0.5,"type":"grass","prop_snowy":False,"inRange":True,"distance":3.2400448322296143},"DistanceTravelled":0,"TimeAlive":30,"MobsKilled":0,"PlayersKilled":0,"DamageTaken":0,"DamageDealt":0,"Life":20.0,"Score":0,"Food":20,"XP":0,"IsAlive":True,"Air":300,"Name":"Chicken Deleter","XPos":0.5,"YPos":4.0,"ZPos":0.5,"Pitch":30.0,"Yaw":270.0,"WorldTime":5000,"TotalTime":36}
         while not done and (args.episodemaxsteps <= 0 or steps < args.episodemaxsteps):
+            try:   
+                state_space_index = agent.state_space_index(state_space)
+                action_type = agent.action_selection(state_space)
+                magnitude = agent.magnitude_selection(state_space, action_type)
+                exploration = random.random()
+                if exploration < epsilon:
+                    action_type = random.choice(action_list)
+                    magnitude = random.choice([-1, 1])
 
-            try:
-                previous_info_loaded = json.loads(previous_info)
-                if previous_info_loaded.get("LineOfSight").get("hitType") == "entity" and previous_info_loaded.get("LineOfSight").get("inRange") == True:
-                    action_type = "attack "
-                else: 
-                    action_type = agent.action_selection_nn(state_space)
-            except:
-                action_type = agent.action_selection_nn(state_space)
-            magnitude = agent.magnitude_selection_nn(state_space, action_type)
+                action = action_type + str(magnitude)
 
-            action = action_type + str(magnitude)
-
-            print(f"action that is taken: {action}")
-            obs, reward, done, info = env.step(action)
-            steps += 1
-            custom_reward = rewards.calculate_reward(info)
-            previous_info = info
-        
-            try:
-                loaded_info = json.loads(info)
-                if loaded_info.get("MobsKilled") == 1:
-                    done = True
-            except:
-                pass
+                print(f"action that is taken: {action}")
+                obs, reward, done, info = env.step(action)
+                steps += 1
+                custom_reward = rewards.calculate_reward(info)
+                if info:
+                    previous_info = info
             
-            print("reward: " + str(custom_reward))
-            print("done: " + str(done))
-            print(type(info))
-            print(info)
-            state_space = agent.state_space_function(info)
-            print(f"current state space: {state_space}")
-            state_space_index = agent.state_space_index(state_space)
-            print(f"current state space index: {state_space_index}")
-            print(f"current value function for state space: {agent.value_table[state_space_index]}")
-            if action_type in ["move ", "turn ", "attack "]:
-                env.step(action_type + "0")
-            
-
-            if custom_reward > agent.value_table[state_space_index][column_index.get(action_type)]:
-                agent.value_table[state_space_index][column_index.get(action_type)] = custom_reward
-                if custom_reward >= max(agent.value_table[state_space_index]):
-                    agent.train_action_nn()
                 try:
-                    agent.magnitude_table[state_space_index][column_index.get(action_type)] = int(magnitude)
+                    loaded_info = json.loads(info)
+                    episode_time = loaded_info.get("TotalTime")
+                    print(f"episode time elapsed: {episode_time}")
+                    if loaded_info.get("MobsKilled") == 5:
+                        done = True
                 except:
-                    agent.magnitude_table[state_space_index][column_index.get(action_type)] = float(magnitude)
-                # retrain magitude_selection_nn
+                    pass
+                
+                print("reward: " + str(custom_reward))
+                print(info)
+                new_state_space = agent.state_space_function(info)
+                print(new_state_space[3])
+                print(f"current state space: {new_state_space}")
+                new_state_space_index = agent.state_space_index(new_state_space)
+                print(f"current value function for state space: {agent.value_table[new_state_space_index]}")
+                if action_type in ["move ", "turn ", "attack "]:
+                    env.step(action_type + "0")
+                
+                
+                if custom_reward > agent.value_table[state_space_index][column_index.get(action_type)]:
+                    agent.value_table[state_space_index][column_index.get(action_type)] = custom_reward
+                    print(f"new row values for value function: {agent.value_table[state_space_index]}")
+                    if action_type == "turn ":
+                        for pitch in range(7):
+                            for chicken_to_agent in range(10):
+                                for angle in range(4):
+                                    for chicken_diff in range(35):
+                                        if angle == state_space[2] and chicken_diff == state_space[3]:
+                                            row = pitch + chicken_to_agent * 7 + angle * 70 + chicken_diff * 280
+                                            if magnitude % 1 == 0:
+                                                agent.magnitude_table[state_space_index][column_index.get(action_type)] = int(magnitude)
+                                            else:
+                                                agent.magnitude_table[state_space_index][column_index.get(action_type)] = float(magnitude)
+                    else:
+                        if magnitude % 1 == 0:
+                            agent.magnitude_table[state_space_index][column_index.get(action_type)] = int(magnitude)
+                        else:
+                            agent.magnitude_table[state_space_index][column_index.get(action_type)] = magnitude
+                
+                state_space = new_state_space
 
-            if args.saveimagesteps > 0 and steps % args.saveimagesteps == 0:
-                h, w, d = env.observation_space.shape
-                img = Image.fromarray(obs.reshape(h, w, d))
-                img.save('image' + str(args.role) + '_' + str(steps) + '.png')
+                if args.saveimagesteps > 0 and steps % args.saveimagesteps == 0:
+                    h, w, d = env.observation_space.shape
+                    img = Image.fromarray(obs.reshape(h, w, d))
+                    img.save('image' + str(args.role) + '_' + str(steps) + '.png')
 
-            time.sleep(0.05)
-
+                time.sleep(0.05)
+            except:
+                continue
+    
+    # used for training purposes only
+    """
+        time_track_list.append(episode_time)
+        if (i+1) % 3 == 0:
+            epsilon -= 0.02
+            agent.train_action_nn()
+    
+    with open('time_data_value.txt', 'w') as f:
+        f.write(str(time_track_list))
+    
+    with open('magnitude_trained.npy', 'wb') as f:
+        np.save(f, agent.magnitude_table)
+    
+    with open('value_trained.npy', 'wb') as f:
+        np.save(f, agent.value_table)
+    """
 
     env.close()
