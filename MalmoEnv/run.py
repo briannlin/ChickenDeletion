@@ -59,6 +59,7 @@ if __name__ == '__main__':
              episode=args.episode, resync=args.resync,
              action_filter={"move", "turn", "attack", "pitch", "jump"})
 
+    
     agent = Agent()
     column_index = {"move ": 0, "turn ": 1, "attack ": 2, "pitch ": 3, "jump ": 4}
     action_list = ["move ", "turn ", "attack "]
@@ -159,9 +160,9 @@ if __name__ == '__main__':
         if (i+1) % 3 == 0:
             epsilon -= 0.02
             agent.train_action_nn()
-    
-    with open('time_data_value.txt', 'w') as f:
-        f.write(str(time_track_list))
+
+    with open('time_data_value.npy', 'wb') as f:
+        np.save(f, np.array(time_track_list))
     
     with open('magnitude_trained.npy', 'wb') as f:
         np.save(f, agent.magnitude_table)
