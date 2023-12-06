@@ -4,7 +4,7 @@
       </About>
 
       <ModSettings>
-         <MsPerTick>50</MsPerTick>
+         <MsPerTick>10</MsPerTick>
       </ModSettings>
 
       <ServerSection>

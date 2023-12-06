@@ -1,9 +1,9 @@
 import math
 from typing import Tuple
 
+def decimal_round(x, decimal_precision: float, round_precision=1) -> float:
+    return round(round(x * (1 / decimal_precision)) / (1 / decimal_precision), round_precision)
 
-def decimal_round(x, decimal_precision: float) -> float:
-    return round(round(x * (1 / decimal_precision)) / (1 / decimal_precision), 1)
 
 
 def integer_round(x, integer_precision: int) -> int:

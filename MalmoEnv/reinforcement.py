@@ -20,7 +20,7 @@ class State:
     def _calculate_xz_delta(self):
         entities_dict = self.data["entities"]
         xz_delta = (utils.decimal_round(entities_dict[1]['x'], 0.1) - utils.decimal_round(self.data['XPos'], 0.1),
-                    utils.decimal_round(entities_dict[1]['z'], 0.1) - utils.decimal_round(self.data['ZPos'], 0.1))
+                     utils.decimal_round(entities_dict[1]['z'], 0.1) - utils.decimal_round(self.data['ZPos'], 0.1))
 
         return xz_delta
 
@@ -45,8 +45,8 @@ class State:
         return round(self.data['XPos'], 3), round(self.data['ZPos'], 3)
 
     def get_distance_from_chicken(self):
-        return utils.decimal_round(utils.distance(self.xz_delta), 0.5)
-
+        return utils.decimal_round(utils.distance(self.xz_delta), 0.25, 2)
+    
     """
     Negative angle means the agent needs to pan to the left to see the target.
     Positive angle means the agent needs to pan to the right to see the target.
@@ -59,44 +59,27 @@ class State:
         return yaw_difference
 
     def get_pitch_difference_from_chicken(self):
-        pitch = self.get_pitch() if self.get_pitch() >= 0 else -10
+        pitch = self.get_pitch() if self.get_pitch() >= 0 else -5
         angle_of_depression = utils.angle_of_depression(AGENT_HEIGHT, utils.distance(self.get_xz_delta()))
-        return -1 * utils.integer_round(pitch - angle_of_depression, 10)
+        return -1 * utils.integer_round(pitch - angle_of_depression, 5)
+
 
     def get_is_near_wall(self):
         xPos = self.data['XPos']
         zPos = self.data['ZPos']
-        if abs(xPos - POSITIVE_WALL_COORDINATE) <= 0.5 or abs(xPos - NEGATIVE_WALL_COORDINATE) <= 0.5 or \
-                abs(zPos - POSITIVE_WALL_COORDINATE) <= 0.5 or abs(zPos - NEGATIVE_WALL_COORDINATE) <= 0.5:
+        positiveWallCoordinate = -2.075
+        negativeWallCoordinate = 3.075
+        if abs(xPos - positiveWallCoordinate) <= 0.5 or abs(xPos - negativeWallCoordinate) <= 0.5 or \
+                abs(zPos - positiveWallCoordinate) <= 0.5 or abs(zPos - negativeWallCoordinate) <= 0.5:
             return -1
         else:
             return 1
 
+
     def to_state(self):
-        if self.get_distance_from_chicken() >= 5:
-            distance_state = 5
-        else:
-            distance_state = self.get_distance_from_chicken()
-
-        if abs(self.get_signed_looking_angle_from_chicken()) >= 90:
-            if self.get_signed_looking_angle_from_chicken() > 0:
-                yaw_difference_state = 90
-            else:
-                yaw_difference_state = -90
-        else:
-            yaw_difference_state = self.get_signed_looking_angle_from_chicken()
-
-        if abs(self.get_pitch_difference_from_chicken()) >= 30:
-            if self.get_pitch_difference_from_chicken() > 0:
-                pitch_difference_state = 30
-            else:
-                pitch_difference_state = -30
-        else:
-            pitch_difference_state = self.get_pitch_difference_from_chicken()
-
-        return np.array((distance_state,
-                         yaw_difference_state,
-                         pitch_difference_state,
+        return np.array((self.get_distance_from_chicken(),
+                         self.get_signed_looking_angle_from_chicken(),
+                         self.get_pitch_difference_from_chicken(),
                          self.get_is_near_wall()))
 
 
@@ -108,7 +91,7 @@ class Reward:
         self.previous_coordinates = previous_coordinates
         self.current_damage_dealt = current_damage_dealt
 
-        self.reward = -1
+        self.reward = -10
 
     def _penalize_for_looking_above_eye_level(self):
         # penalize for looking above eye-level (useless action)
@@ -138,15 +121,15 @@ class Reward:
 
     def _penalize_near_wall(self):
         if self.state.get_is_near_wall() == -1:
-            print("    Wall penalty: -1")
-            self.reward += -1
+            print("    Wall penalty: -7")
+            self.reward += -7
         else:
             print()
 
     def _calculate_distance_from_chicken_reward(self):
         # closer = better reward, too far = penalized
-        distance_reward = (-0.5 * utils.decimal_round(self.state.get_distance_from_chicken(), 0.5)) if self.state.get_distance_from_chicken() > ATTACK_RANGE \
-            else 2 * (ATTACK_RANGE - utils.decimal_round(self.state.get_distance_from_chicken(), 0.5))
+        distance_reward = (-0.5 * self.state.get_distance_from_chicken()) if self.state.get_distance_from_chicken() > ATTACK_RANGE \
+            else 2 * (ATTACK_RANGE - self.state.get_distance_from_chicken())
         self.reward += distance_reward
         print(f"    Dis reward: {distance_reward}")
 
@@ -212,28 +195,30 @@ class Reward:
         # reward for damaging target
         damage_dealt = self.data['DamageDealt']
         if damage_dealt > self.current_damage_dealt:
-            # Check if action was "attack" before rewarding - deal with possible client-server synchronization issue
             if self.action == 5:
-                self.reward += (
-                            (damage_dealt - self.current_damage_dealt) * 2)  # Each half a heart dmg = 10 DamageDealt
-                print(f"reward for dealing dmg: {((damage_dealt - self.current_damage_dealt) * 2)}")
+                self.reward += ((damage_dealt - self.current_damage_dealt) * 10)  # Each half a heart dmg = 10 DamageDealt
+                print(f"reward for dealing dmg: {((damage_dealt - self.current_damage_dealt) * 10)}")
 
     def _calculate_chickens_killed_reward(self):
         killedChicken = False
+        inSync = True
         mobs_killed = self.data['MobsKilled']
         if mobs_killed > 0:
             # Check if action was "attack" before rewarding - deal with possible client-server synchronization issue
             if self.action == 5:
-                self.reward += (mobs_killed * 1000)
-                print(f"reward for KILLING CHICKEN: {(mobs_killed * 1000)}")
+                self.reward += (mobs_killed * 5000)
+                print(f"reward for KILLING CHICKEN: {(mobs_killed * 5000)}")
+            else:
+                inSync = False
+
             killedChicken = True
 
-        return killedChicken
+        return killedChicken, inSync
 
     def calculate_reward(self):
         penalty_step = self._penalize_for_looking_above_eye_level()
         self._penalize_for_pitching_down_when_already_looking_straight_down()
-        self._penalize_for_attacking()
+        # self._penalize_for_attacking()
         # self._penalize_for_getting_stuck()
         self._calculate_distance_from_chicken_reward()
         self._calculate_yaw_from_chicken_reward()
@@ -241,5 +226,5 @@ class Reward:
         self._penalize_near_wall()
         # self._calculate_line_of_sight_reward()
         self._calculate_damage_dealt_reward()
-        killedChicken = self._calculate_chickens_killed_reward()
-        return self.reward, killedChicken, penalty_step
+        killedChicken, inSync = self._calculate_chickens_killed_reward()
+        return self.reward, killedChicken, inSync, penalty_step

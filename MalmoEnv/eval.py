@@ -3,7 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 
-file_path = 'qtable_full_simplified_episode_results.csv'
+file_path = 'dqn_full_v4_episode_results.csv'
 df = pd.read_csv(file_path)
 
 sns.set(style="whitegrid")
