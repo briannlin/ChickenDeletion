@@ -245,6 +245,7 @@ class Env:
             self._find_server()
         if not self.client_socket:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
             # print("connect " + self.server2 + ":" + str(self.port2))
             sock.connect((self.server2, self.port2))
             self._hello(sock)
@@ -275,7 +276,7 @@ class Env:
         if obs is None or len(obs) == 0 or obs.size == 0:
             if self.reshape:
                 obs = np.zeros((self.height, self.width, self.depth), dtype=np.uint8)
-            else: 
+            else:
                 obs = np.zeros(self.height * self.width * self.depth, dtype=np.uint8)
         elif self.reshape:
             obs = obs.reshape((self.height, self.width, self.depth)).astype(np.uint8)
@@ -313,9 +314,14 @@ class Env:
         while not self.done and \
                 ((obs is None or len(obs) == 0) or
                  (withinfo and info is None) or turn):
-            step_message = "<Step" + str(self.step_options) + ">" + \
-                           self.action_space[action] + \
-                           "</Step" + str(self.step_options) + " >"
+            if type(action) == int:
+                step_message = "<Step" + str(self.step_options) + ">" + \
+                               self.action_space[action] + \
+                               "</Step" + str(self.step_options) + " >"
+            else:
+                step_message = "<Step" + str(self.step_options) + ">" + \
+                               action + \
+                               "</Step" + str(self.step_options) + " >"
             comms.send_message(self.client_socket, step_message.encode())
             if withturnkey:
                 comms.send_message(self.client_socket, self.turn_key.encode())

@@ -93,10 +93,12 @@ class CommandParser:
             if len(self.action_filter) != 0 and verb not in self.action_filter:
                 continue
             if type == 'DiscreteMovement':
-                if verb in {"move", "turn", "look",
-                            "strafe", "jumpmove", "jumpstrafe"}:
+                if verb in {"move"}:
                     actions.append(verb + " 1")
-                    actions.append(verb + " -1")
+                elif verb in {"turn", "look",
+                            "strafe", "jumpmove", "jumpstrafe"}:
+                    actions.append(verb + " 0.25")
+                    actions.append(verb + " -0.25")
                 elif verb in {"jumpeast", "jumpnorth", "jumpsouth",
                               "jumpwest", "movenorth", "moveeast",
                               "movesouth", "movewest", "jumpuse",
@@ -106,7 +108,10 @@ class CommandParser:
                     raise CommandHandlerException("Invalid discrete command")
             elif type == 'ContinuousMovement':
                 #  Translate to discrete.
-                if verb in {"move", "strafe", "pitch", "turn"}:
+                if verb in {"move"}:
+                    actions.append(verb + " 1")
+                    #actions.append(verb + " 0")
+                elif verb in {"strafe", "pitch", "turn"}:
                     actions.append(verb + " 1")
                     actions.append(verb + " -1")
                 elif verb in {"crouch", "jump", "attack", "use"}:
@@ -144,6 +149,10 @@ class CommandParser:
                 actions.append(verb)
             elif type == 'AbsoluteMovement' or 'Inventory':
                 actions.append(verb)
+        actions.append("pitch 0")
+        actions.append("turn 0")
+        actions.append("move 0")
+        print("actions: ", actions)
         return actions
 
     def _command_hander(self, handlers, turnbased, commands):

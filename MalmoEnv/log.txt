@@ -1,0 +1,1 @@
+KILLED CHICKEN FROM STATE [  1.5 -10.   10.    1. ] WITH ACTION: turn -1
