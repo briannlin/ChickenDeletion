@@ -1,4 +1,53 @@
-# MalmoEnv #
+# Project Files Overview #
+
+### Jupyter Notebook Files
+- project.ipynb 
+  - Demonstrates the Q-table agent and the DDQN agent performing their optimal states in response to a certain state, and evaluation graphs containing performance results over training.
+- project.html
+  - HTML file of the project.ipynb file containing code and cell outputs.
+
+### Malmo Mission Files
+- missions/chicken_deletion.xml
+  - Contains the environmental setup for training the agent, which is a 15x15 enclosed area with the agent and chickens spawning within, as well as other Malmo configurations.
+- missions/chicken_deletion_5x5.xml
+  - Contains the environmental setup for training the agent, which is a 15x15 enclosed area with the agent and chickens spawning within, as well as other Malmo configurations.
+
+### Q-Table Agent Files
+- qtable_helper_functions.py
+  - Contains the agent class and the reward class to help with computations related to state space, reward functions, and decision making.
+- value_trained.npy	
+  - Contains the q-table after training with state space for rows, action as columns, and state-action reward within the cells.
+- time_data_value.npy
+  - Contains the list of time needed to kill the chicken during training of best action policy.
+- time_data_magnitude.npy
+  - Contains the list of time needed to kill the chicken during training of optimal magnitude given state-action.
+- qtable_run.py
+  - Main file for training the q-table agent, which utilizes epsilon exploration.
+- magnitude_trained.npy
+  - Contains the q-table after training with state space for rows, action as columns, and magnitude for the action given state space within the cells.
+
+### DDQN Agent Files
+- agents/dqn_agent.py
+  - Contains the DDQN algorithm and agent, with features such as epsilon-exploration, choosing an optimal action, experience replay buffer, gradient descent to minimize loss and update the policy and target network, and save/load functionality.
+- dqn_full_train.py
+  - Contains the environment training loop used to train the DDQN agent to perform optimal moves according to the DDQN algorithm by using states and reward shaping.
+- dqn_full_v4_agent.pkl
+  - The fully-trained DDQN agent is saved in this .pkl file and is loaded in the .ipynb demonstration.
+- dqn_full_v4_episode_results.csv
+  - The results of the DDQN agent during each episode of training containing epsilon value, cumulative reward, and episode length - these results are used in the .ipynb demo evaluation.
+- dqn_qtable_baseline_full_train.py
+  - Contains the environment training loop used to train the baseline Q-table agent (used for comparison against the DDQN agent) to perform optimal moves by using states and reward shaping.
+- dqn_qtable_baseline_full_simplified_agent.pkl
+  - Contains the environment training loop used to train the baseline Q-table agent (used for comparison against the DDQN agent) to perform optimal moves according to the basic Q-table algorithm by using states and reward shaping.
+- dqn_qtable_baseline_full_simplified_episode_results.csv
+  - The results of the baseline Q-table agent (used for comparison against the DDQN agent) during each episode of training containing epsilon value, cumulative reward, and episode length - these results are used in the .ipynb demo evaluation.
+- reinforcement.py
+  - For the DDQN agent’s reinforcement learning - contains a custom State and Reward class used to generate a state representation and a total episode reward given environment observation data.
+- utils.py
+  - Contains utility helper functions for the DDQN agent such as custom rounding, calculating distance and angles, etc.
+
+
+# MalmoEnv Setup + Run Instructions #
 
 MalmoEnv is an OpenAI "gym" Python Environment for Malmo/Minecraft, directly implemented Python to Java Minecraft.
 
@@ -29,37 +78,4 @@ Running a single agent example mission (run each command in different cmd prompt
 
 (In another shell) `cd malmo/MalmoEnv` optionally run `python3 setup.py install`
 
-`python3 run.py --mission missions/mobchase_single_agent.xml --port 9000 --episodes 10`
-
-A two agent example mission (run each command in different cmd prompt/shells):
-
-`./launchClient.sh -port 9000 -env`
-
-`./launchClient.sh -port 9001 -env`
-
-In the two agent case, running each agent in it's own shell, the run script (for agents other than the first) is given two ports 
-- the first for the mission coordinator and a second (port2) for the other agent's Minecraft:
-
-`python3 run.py --mission missions/mobchase_two_agents.xml --port 9000 --role 0 --experimentUniqueId "test1"`
-
-`python3 run.py --mission missions/mobchase_two_agents.xml --port 9000 --port2 9001 --role 1  --experimentUniqueId "test1"`
-
-## Running multi-agent examples using multiple Python threads: ##
-
-`python3 runmultiagent.py --mission missions/mobchase_two_agents.xml`
-
-## Installing with pip ##
-
-MalmoEnv is available as a pip wheel.
-
-If you install with `pip3 install malmoenv` then you can download the Minecraft mod 
-(assuming you have git available from the command line) with: 
-
-`python3 -c "import malmoenv.bootstrap; malmoenv.bootstrap.download()"`
-
-The sample missions will be downloaded to ./MalmoPlatform/MalmoEnv/missions.
-
-`python3 -c "import malmoenv.bootstrap; malmoenv.bootstrap.launch_minecraft(9000)"` can be used to start up the Malmo Minecraft Mod 
-listening for MalmoEnv connections on port 9000 after downloading Malmo.
-
-To test: `cd MalmoPlatform/MalmoEnv; python3 runmultiagent.py --mission missions/mobchase_single_agent.xml`
+`python3 <run.py/dqn_full_train.py> --mission missions/chicken_deletion.xml --port 9000 --episodes 10`
