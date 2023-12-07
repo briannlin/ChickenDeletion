@@ -1,3 +1,5 @@
+# NOTE: All of our relevant code is in the folder ChickenDeletion/MalmoEnv. See: https://github.com/briannlin/ChickenDeletion/blob/master/MalmoEnv/README.md
+
 # Malmö #
 
 Project Malmö is a platform for Artificial Intelligence experimentation and research built on top of Minecraft. We aim to inspire a new generation of research into challenging new problems presented by this unique environment.
