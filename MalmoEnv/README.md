@@ -1,3 +1,5 @@
+# NOTE: All of our relevant code is in this folder, ChickenDeletion/MalmoEnv: However, in order to run the project properly, you must clone the project from the root folder, https://github.com/briannlin/ChickenDeletion/tree/master.
+
 # Project Files Overview #
 
 ### Jupyter Notebook Files
