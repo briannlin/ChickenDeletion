@@ -4,7 +4,7 @@
       </About>
 
       <ModSettings>
-         <MsPerTick>10</MsPerTick>
+         <MsPerTick>50</MsPerTick>
       </ModSettings>
 
       <ServerSection>
@@ -154,11 +154,19 @@
                <DrawBlock type="clay" x="6" y="0" z="-8" />
                <DrawBlock type="spruce_fence" x="7" y="4" z="-8" />
                <DrawBlock type="clay" x="7" y="0" z="-8" />
+
+
+
                
                <!-- Chicken -->
-               <DrawEntity type="Chicken" x="3.5" y="4" z="5.5" />
+               <DrawEntity type="Chicken" x="5" y="4" z="5" /> <!-- <DrawEntity type="Chicken" x="3.5" y="4" z="5.5" /> -->
+               <DrawEntity type="Chicken" x="6" y="4" z="3" />
+               <DrawEntity type="Chicken" x="-2" y="4" z="-4" />
+               <DrawEntity type="Chicken" x="-5.5" y="4" z="-6.5" />
+               <DrawEntity type="Chicken" x="3" y="4" z="-5" />
+
             </DrawingDecorator>
-            <ServerQuitFromTimeUp description="out_of_time" timeLimitMs="60000" />
+            <ServerQuitFromTimeUp description="out_of_time" timeLimitMs="45000" /> <!--180000-->
             <ServerQuitWhenAnyAgentFinishes />
          </ServerHandlers>
       </ServerSection>
@@ -169,7 +177,8 @@
             <Placement pitch="0" x="0.5" y="4" yaw="270" z="0.5" />
             <Inventory>
                <InventoryBlock quantity="1" slot="39" type="diamond_helmet" />
-               <InventoryItem slot="0" type="diamond_sword" />
+               <InventoryItem slot="0" type="wooden_sword" />
+               <!--<InventoryItem slot="0" type="diamond_sword" />-->
             </Inventory>
          </AgentStart>
          <AgentHandlers>
