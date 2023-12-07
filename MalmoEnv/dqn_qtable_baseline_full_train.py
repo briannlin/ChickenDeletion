@@ -42,8 +42,8 @@ COMMANDS_DICT = {index: obj for index, obj in enumerate(COMMANDS_LIST)}
 STATE_SIZE = 14 * 36 * 14 * 2
 ACTION_SIZE = 6
 MS_PER_TICK = 10
-EPISODE_RESULTS_FILE = "qtable_full_simplified_episode_results.csv"
-AGENT_SAVE_FILE = "qtable_full_simplified_agent.pkl"
+EPISODE_RESULTS_FILE = "dqn_qtable_baseline_full_simplified_episode_results.csv"
+AGENT_SAVE_FILE = "dqn_qtable_baseline_full_simplified_agent.pkl"
 IS_TRAINING = True
 DO_SAVE = False
 
